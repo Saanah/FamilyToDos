@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "975709235845",
+    "project_id": "familytodos-f9192",
+    "storage_bucket": "familytodos-f9192.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:975709235845:android:c834732258640b901657ec",
+        "android_client_info": {
+          "package_name": "com.example.familytodos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "975709235845-ng1avfki8uv5nkiu5sktdd5mudf7t16b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqtL4zlLxIFxWbggd_YR1LmG52GCSHb_8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "975709235845-ng1avfki8uv5nkiu5sktdd5mudf7t16b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
