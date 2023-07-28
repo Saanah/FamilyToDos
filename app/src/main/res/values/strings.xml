@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">FamilyToDos</string>
     <string name="sign_in">Sign in</string>
+    <string name="create_account">Create an account</string>
+    <string name="register_now">Don\'t have an account yet? Sign in here!</string>
+    <string name="sign_out">Sign out</string>
+    <string name="add_group">Add group</string>
+    <string name="no_groups">No existing groups</string>
+    <string name="join_or_create_group">Create or join in a group!</string>
+    <string name="add_selected_users">Add the selected users</string>
 </resources>

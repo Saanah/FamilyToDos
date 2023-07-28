@@ -14,8 +14,12 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val viewModel by viewModels<AuthViewModel>()
-
+    private val authViewModel by viewModels<AuthViewModel>()
+    private val groupViewModel by viewModels<GroupViewModel>()
+    private val groupDetailViewModel by viewModels<GroupDetailViewModel>()
+    private val createGroupViewModel by viewModels<CreateGroupViewModel>()
+    private val searchBarViewModel by viewModels<SearchBarViewModel>()
+    private val addGroupMembersViewModel by viewModels<AddGroupMembersViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -26,7 +30,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                        Navigation(viewModel) //Navigaatio komponentti
+                        Navigation(authViewModel,groupViewModel,groupDetailViewModel, createGroupViewModel, searchBarViewModel, addGroupMembersViewModel) //Navigaatio komponentti
                 }
             }
         }
