@@ -1,4 +1,4 @@
-package com.example.familytodos
+package com.example.familytodos.ui.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable

@@ -2,6 +2,7 @@ package com.example.familytodos
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.familytodos.data.AuthRepository
+import com.example.familytodos.data.FirestoreRepository
 import com.example.familytodos.data.Resource
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,7 +13,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val repository : AuthRepository
+    private val repository : AuthRepository, //Get auth repository
 ) : ViewModel (){
 
     private val _loginFlow = MutableStateFlow<Resource<FirebaseUser>?>(null)
@@ -36,9 +37,9 @@ class AuthViewModel @Inject constructor(
         _loginFlow.value = result
     }
 
-    fun register(name: String, email: String, password: String) = viewModelScope.launch {
-        _loginFlow.value = Resource.Loading
-        val result = repository.register(name, email, password)
+    fun register(username: String, email: String, password: String) = viewModelScope.launch {
+        _registerFlow.value = Resource.Loading
+        val result = repository.register(username, email, password)
         _registerFlow.value = result
     }
 
