@@ -44,7 +44,7 @@ import com.example.familytodos.ui.theme.spacing
 fun AddGroupMembersScreen(searchBarViewModel: SearchBarViewModel, addGroupMembersViewModel: AddGroupMembersViewModel, navController: NavController, groupId: String) {
 
     val foundUsers by searchBarViewModel.foundUsers.collectAsState()
-    val selectedUsers = remember { mutableStateListOf<User>() } //selected group members' user ids are saved in a list
+    val selectedUsers = remember { mutableStateListOf<User>() } //selected group members are saved in a list
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -68,7 +68,7 @@ fun AddGroupMembersScreen(searchBarViewModel: SearchBarViewModel, addGroupMember
                 val isSelected =
                     selectedUsers.contains(user) //If user is in the list and selected return true, otherwise false
 
-                userCard(user, isSelected, onClick = {
+                UserCard(user, isSelected, onClick = {
                     if (isSelected) selectedUsers.remove(user) //if user is already selected, delete the user from list
                     else selectedUsers.add(user)
                 })
@@ -82,51 +82,6 @@ fun AddGroupMembersScreen(searchBarViewModel: SearchBarViewModel, addGroupMember
             searchBarViewModel.clearFoundUsers()}
           ) {
             Text(text = stringResource(R.string.add_selected_users))
-        }
-    }
-}
-
-@Composable
-fun userCard(user: User, isSelected: Boolean, onClick: (String) -> Unit) {
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(MaterialTheme.spacing.medium)
-            .clickable(onClick = {
-                onClick(user.userId)
-            }),
-        shape = RoundedCornerShape(MaterialTheme.spacing.medium),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) Color.Green else MaterialTheme.colorScheme.primaryContainer
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = MaterialTheme.spacing.small)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(MaterialTheme.spacing.medium),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val userImage = if (user.profile_img.isNullOrEmpty()) {
-
-                painterResource(id = R.drawable.user_img)
-
-            } else {
-                rememberAsyncImagePainter(user.profile_img)
-            }
-            Text(text = user.username)
-            Spacer(modifier = Modifier.weight(1f))
-            Image(
-                modifier = Modifier
-                    .size(size = 80.dp)
-                    .clip(shape = RoundedCornerShape(MaterialTheme.spacing.medium)),
-
-                painter = userImage,
-                contentDescription = "User profile picture",
-                contentScale = ContentScale.Crop
-            )
         }
     }
 }

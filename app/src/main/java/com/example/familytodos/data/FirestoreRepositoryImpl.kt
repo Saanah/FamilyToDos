@@ -16,7 +16,9 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class FirestoreRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth
@@ -28,11 +30,11 @@ class FirestoreRepositoryImpl @Inject constructor(
     override val currentUser: FirebaseUser?
         get() = firebaseAuth.currentUser
 
-    override suspend fun addUserToFirestore(username: String, email : String) {
+    override suspend fun addUserToFirestore(username: String, email: String) {
 
         val userId = currentUser?.uid
 
-        if (userId != null){
+        if (userId != null) {
 
             //Create a hashmap of user
             val user = hashMapOf(
@@ -46,7 +48,7 @@ class FirestoreRepositoryImpl @Inject constructor(
             //add registered user to Firestore
             db.collection("Users").document(userId).set(user)
                 .addOnSuccessListener { Log.d("success", "User added to Firestore") }
-                .addOnFailureListener {  Log.d("error", "Not able to add user to Firestore") }
+                .addOnFailureListener { Log.d("error", "Not able to add user to Firestore") }
         }
     }
 
@@ -100,37 +102,26 @@ class FirestoreRepositoryImpl @Inject constructor(
 
     override suspend fun createGroup(name: String, description: String): String {
 
-        var result = ""
-        var documentId = ""
         val userId = currentUser?.uid
-
-        try {
+        val documentRef = db.collection("Group").document() //Create a new Group document
+        var documentId = documentRef.id                                 //get the freshly created document's documentId
 
             //Create a hashmap of user's inputs and the needed ids
             val group = hashMapOf(
-                "id" to "",
+                "id" to documentId,
                 "name" to name,
                 "description" to description,
                 "creatorId" to userId
             )
 
-            val documentRef = db.collection("Group").document() //Create a new Group document
-            documentId = documentRef.id                                 //get the freshly created document's documentId
-            group["id"] = documentId                                        //Set the document id into the hashmap
-
+        try
+        {
             //create the group in Firestore with the given information
             documentRef.set(group)
-                .addOnSuccessListener {
-                    Log.d(TAG, "Group successfully created!"); result = "Group created!"
-                }
-                .addOnFailureListener { e ->
-                    Log.e(TAG, "Error creating a document.", e); result =
-                    "Error creating a new group."
-                }
+            Log.d(TAG, "Group successfully created!")
 
         } catch (e: Exception) {
-
-            result = "Something went wrong."
+            Log.e(TAG, "Error creating a group.", e)
         }
 
         return documentId
@@ -161,15 +152,30 @@ class FirestoreRepositoryImpl @Inject constructor(
         return userList
     }
 
-    override suspend fun addSelectedUsersToGroup( groupId: String, selectedUsers: List<User> ): String {
+    override suspend fun addSelectedUsersToGroup(
+        groupId: String,
+        selectedUsers: List<User>
+    ): String {
 
         return try {
-            // turn into a list of user ids
-            val userIds = selectedUsers.map { it.userId }
+
+            //Turn selectedUser information into a list of hashmaps
+            val users = selectedUsers.map{ user ->
+
+                hashMapOf(
+                    "userId" to user.userId,
+                    "username" to user.username,
+                    "email" to user.email,
+                    "profile_img" to user.profile_img,
+                    "profile_desc" to user.profile_desc
+
+                )
+            }
+
 
             // Update the group document with the selected user ids
             val groupRef = db.collection("Group").document(groupId)
-            groupRef.update("members", FieldValue.arrayUnion(*userIds.toTypedArray()))
+            groupRef.update("members", FieldValue.arrayUnion(*users.toTypedArray()))
 
             "Users successfully added to the group."
 
@@ -177,5 +183,45 @@ class FirestoreRepositoryImpl @Inject constructor(
             "Error adding users to the group: ${e.message}"
         }
 
+    }
+
+    override suspend fun createTask(groupId: String, task: String, username: String?): String = suspendCoroutine {continuation -> //wrap async operation inside coroutine
+
+        val documentRef = db.collection("Task").document() //Create task document
+        var  documentId = documentRef.id
+
+        val task = hashMapOf(
+            "id" to documentId,
+            "groupId" to groupId,
+            "task" to task,
+            "username" to username
+        )
+
+        documentRef.set(task)
+            .addOnSuccessListener {
+                Log.d(TAG, "Task successfully created!")
+                continuation.resume("Task succesfully created!") //resume function and return message
+            }
+            .addOnFailureListener { e ->
+                Log.d(TAG, "Error creating a task", e)
+                continuation.resume("Error creating a task: $e")
+            }
+
+    }
+
+    override suspend fun getGroupInformation(groupId: String): Group {
+
+        var group = Group()
+
+        try {
+            val querySnapshot = db.collection("Group").whereEqualTo("id", groupId).get().await()
+            val groupDocument = querySnapshot.documents.firstOrNull() //Get the first document, return null if collection is empty
+            group = groupDocument?.toObject(Group::class.java) ?: Group() //Turn into an object or return an empty object
+        }
+        catch (e: Exception){
+            Log.d(TAG, "Error fetching group information", e)
+        }
+
+        return group
     }
 }

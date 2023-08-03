@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.familytodos.components.AddGroupMembersScreen
 import com.example.familytodos.components.CreateGroupScreen
+import com.example.familytodos.components.CreateTaskScreen
 import com.example.familytodos.components.GroupDetailScreen
 import com.example.familytodos.components.LoginScreen
 import com.example.familytodos.components.MainScreen
@@ -43,6 +44,11 @@ fun Navigation(
             CreateGroupScreen(createGroupViewModel = createGroupViewModel, navController = navController)
         }
 
+        composable(route = Screens.CreateTaskScreen.route)
+        {
+            CreateTaskScreen(navController = navController, groupViewModel = groupViewModel)
+        }
+
         composable(route = Screens.AddGroupMembersScreen.route + "/{groupId}",
             arguments = listOf(navArgument("groupId"){ type = NavType.StringType }))
         {
@@ -56,8 +62,10 @@ fun Navigation(
             Screens.GroupDetailScreen.route + "/{id}",
             arguments = listOf(navArgument("id") { type = NavType.StringType })
         ) { backStackEntry ->
-            val groupId = backStackEntry.arguments!!.getString("id")!!
-            GroupDetailScreen(groupId = groupId, groupDetailViewModel = groupDetailViewModel)
+            val groupId = backStackEntry.arguments?.getString("id")
+            groupId?.let { groupId ->
+            GroupDetailScreen(groupId = groupId, groupDetailViewModel = groupDetailViewModel, navController = navController)
+            }
         }
     }
 }

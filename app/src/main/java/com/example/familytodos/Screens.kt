@@ -8,4 +8,5 @@ sealed class Screens(val route: String) {
     object CreateGroupScreen : Screens("create_group_screen")
     object GroupDetailScreen : Screens("group_detail_screen")
     object AddGroupMembersScreen : Screens("add_group_members_screen")
+    object CreateTaskScreen : Screens("create_task_screen")
 }

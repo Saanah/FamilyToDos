@@ -6,5 +6,6 @@ data class Group(
     val description: String = "",
     val creatorId: String = "",
     val img: String? =  null,
-    val img_description: String = ""
+    val img_description: String = "",
+    val members: List<User> = emptyList()
 )

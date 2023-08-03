@@ -30,18 +30,24 @@ class GroupViewModel @Inject constructor(
     private val _group : MutableStateFlow<MutableList<Group>> = MutableStateFlow(mutableListOf())
     val group: StateFlow<MutableList<Group>> = _group
 
-    //When GroupViewModel is called call init and getUserGroupData
-    fun getUserGroupData() {
-
-        getUserGroupDataFirestore()
-    }
+    private val _groupInfo : MutableStateFlow<Group> = MutableStateFlow(Group())
+    val groupInfo : StateFlow<Group> = _groupInfo
 
     //Firestore call to get all user's groups
-    private fun getUserGroupDataFirestore() {
+    fun getUserGroupData() {
 
         //Launch coroutine
         viewModelScope.launch {
             _group.value = firestoreRepository.getUserGroups()
+        }
+    }
+
+    //Firestore call to get group's information by id
+    fun getGroupInfoById(groupId : String) {
+
+        viewModelScope.launch {
+
+            _groupInfo.value = firestoreRepository.getGroupById(groupId)
         }
     }
 }
