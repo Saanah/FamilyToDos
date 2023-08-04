@@ -15,6 +15,7 @@ interface FirestoreRepository {
     suspend fun createGroup(name: String, description: String):  String
     suspend fun findUser(name: String):  MutableList<User>
     suspend fun addSelectedUsersToGroup(groupId: String, selectedUsers: List<User>) : String
+    suspend fun createTask(groupId: String, task: String, username: String, userId : String, isCompleted: Boolean): String
     //suspend fun createComment(): Comment
 
 }

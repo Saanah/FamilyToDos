@@ -5,18 +5,17 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.example.familytodos.data.model.Group
 import com.example.familytodos.data.model.User
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
-import com.google.firebase.firestore.ktx.toObject
-import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.suspendCancellableCoroutine
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
-import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class FirestoreRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth
@@ -28,11 +27,11 @@ class FirestoreRepositoryImpl @Inject constructor(
     override val currentUser: FirebaseUser?
         get() = firebaseAuth.currentUser
 
-    override suspend fun addUserToFirestore(username: String, email : String) {
+    override suspend fun addUserToFirestore(username: String, email: String) {
 
         val userId = currentUser?.uid
 
-        if (userId != null){
+        if (userId != null) {
 
             //Create a hashmap of user
             val user = hashMapOf(
@@ -46,28 +45,23 @@ class FirestoreRepositoryImpl @Inject constructor(
             //add registered user to Firestore
             db.collection("Users").document(userId).set(user)
                 .addOnSuccessListener { Log.d("success", "User added to Firestore") }
-                .addOnFailureListener {  Log.d("error", "Not able to add user to Firestore") }
+                .addOnFailureListener { Log.d("error", "Not able to add user to Firestore") }
         }
     }
 
 
     override suspend fun getGroupById(groupId: String): Group {
 
-        //val documentRef = db.collection("Group").document(groupId)
         var group = Group()
 
         try {
-
-            db.collection("Group").whereEqualTo("id", "$groupId").get().await().map {
-
-                val response = it.toObject(Group::class.java)
-                group = response
-            }
-
-        } catch (e: FirebaseFirestoreException) {
-
-            Log.d("error", "getDataFromFireStore $e")
-
+            val querySnapshot = db.collection("Group").whereEqualTo("id", groupId).get().await()
+            val groupDocument =
+                querySnapshot.documents.firstOrNull() //Get the first document, return null if collection is empty
+            group = groupDocument?.toObject(Group::class.java)
+                ?: Group() //Turn into an object or return an empty object
+        } catch (e: Exception) {
+            Log.d(TAG, "Error fetching group information", e)
         }
 
         return group
@@ -82,12 +76,16 @@ class FirestoreRepositoryImpl @Inject constructor(
 
         try {
 
-            db.collection("Group").whereEqualTo("creatorId", "$userId").get().await().map {
+            db.collection("Group")
+                .whereEqualTo("creatorId", "$userId")
+                .orderBy("name", Query.Direction.ASCENDING)
+                .orderBy("createdTimestamp", Query.Direction.DESCENDING)
+                .get().await().map {
 
-                val response = it.toObject(Group::class.java)
-                group = response
-                groupList.add(group)
-            }
+                    val response = it.toObject(Group::class.java)
+                    group = response
+                    groupList.add(group)
+                }
 
         } catch (e: FirebaseFirestoreException) {
 
@@ -100,37 +98,29 @@ class FirestoreRepositoryImpl @Inject constructor(
 
     override suspend fun createGroup(name: String, description: String): String {
 
-        var result = ""
-        var documentId = ""
         val userId = currentUser?.uid
+        val documentRef = db.collection("Group").document() //Create a new Group document
+        var documentId = documentRef.id                                //get the freshly created document's documentId
+
+        //Create a hashmap of user's inputs and the needed ids
+        val group = hashMapOf(
+            "id" to documentId,
+            "name" to name,
+            "description" to description,
+            "creatorId" to userId,
+            "img" to null,
+            "img_description" to "",
+            "members" to emptyList<User>(),
+            "createdTimestamp" to Timestamp.now()
+        )
 
         try {
-
-            //Create a hashmap of user's inputs and the needed ids
-            val group = hashMapOf(
-                "id" to "",
-                "name" to name,
-                "description" to description,
-                "creatorId" to userId
-            )
-
-            val documentRef = db.collection("Group").document() //Create a new Group document
-            documentId = documentRef.id                                 //get the freshly created document's documentId
-            group["id"] = documentId                                        //Set the document id into the hashmap
-
             //create the group in Firestore with the given information
             documentRef.set(group)
-                .addOnSuccessListener {
-                    Log.d(TAG, "Group successfully created!"); result = "Group created!"
-                }
-                .addOnFailureListener { e ->
-                    Log.e(TAG, "Error creating a document.", e); result =
-                    "Error creating a new group."
-                }
+            Log.d(TAG, "Group successfully created!")
 
         } catch (e: Exception) {
-
-            result = "Something went wrong."
+            Log.e(TAG, "Error creating a group.", e)
         }
 
         return documentId
@@ -161,21 +151,65 @@ class FirestoreRepositoryImpl @Inject constructor(
         return userList
     }
 
-    override suspend fun addSelectedUsersToGroup( groupId: String, selectedUsers: List<User> ): String {
+    override suspend fun addSelectedUsersToGroup(
+        groupId: String,
+        selectedUsers: List<User>
+    ): String {
 
         return try {
-            // turn into a list of user ids
-            val userIds = selectedUsers.map { it.userId }
 
-            // Update the group document with the selected user ids
+            //Turn selectedUser information into a list of hashmaps
+            val users = selectedUsers.map { user ->
+
+                hashMapOf(
+                    "userId" to user.userId,
+                    "username" to user.username,
+                    "email" to user.email,
+                    "profile_img" to user.profile_img,
+                    "profile_desc" to user.profile_desc
+
+                )
+            }
+
+            // Update the group document with the selected users
             val groupRef = db.collection("Group").document(groupId)
-            groupRef.update("members", FieldValue.arrayUnion(*userIds.toTypedArray()))
+            groupRef.update("members", FieldValue.arrayUnion(*users.toTypedArray()))
 
             "Users successfully added to the group."
 
         } catch (e: Exception) {
             "Error adding users to the group: ${e.message}"
         }
+    }
 
+    override suspend fun createTask(
+        groupId: String,
+        task: String,
+        username: String,
+        userId: String,
+        isCompleted: Boolean
+    ): String = suspendCoroutine { continuation -> //wrap async operation inside coroutine
+
+        val documentRef = db.collection("Task").document() //Create task document
+        var documentId = documentRef.id
+
+        val task = hashMapOf(
+            "id" to documentId,
+            "groupId" to groupId,
+            "task" to task,
+            "username" to username,
+            "userId" to userId,
+            "isCompleted" to isCompleted
+        )
+
+        documentRef.set(task)
+            .addOnSuccessListener {
+                Log.d(TAG, "Task successfully created!")
+                continuation.resume("Task succesfully created!") //resume function and return message
+            }
+            .addOnFailureListener { e ->
+                Log.d(TAG, "Error creating a task", e)
+                continuation.resume("Error creating a task: $e")
+            }
     }
 }
