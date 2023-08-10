@@ -22,12 +22,18 @@ class CreateGroupViewModel @Inject constructor(
 ) : ViewModel() {
 
     //THINK
-    private val  _message = MutableStateFlow<String>("")
-    val message : StateFlow<String> = _message
+    /** private val  _message = MutableStateFlow<String>("")
+    val message : StateFlow<String> = _message **/
 
     private val  _groupId = MutableStateFlow<String>("")
     val groupId : StateFlow<String> = _groupId
 
+    //Clear groupId
+    fun clearGroupId() {
+        viewModelScope.launch {
+            _groupId.value = ""
+        }
+    }
 
     //Function that is called through viewmodel
     fun createGroup(name: String, description: String){
@@ -42,10 +48,10 @@ class CreateGroupViewModel @Inject constructor(
         //Launch coroutine
         viewModelScope.launch {
             _groupId.value = firestoreRepository.createGroup(name, description)
-            //THINK
+            /**
             if (_message.value == "Group successfully created!") {
                 groupViewModel.getUserGroupData()
-            }
+            }**/
         }
     }
 }

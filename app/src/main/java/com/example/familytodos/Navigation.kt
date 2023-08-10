@@ -22,7 +22,8 @@ fun Navigation(
     groupDetailViewModel: GroupDetailViewModel,
     createGroupViewModel: CreateGroupViewModel,
     searchBarViewModel: SearchBarViewModel,
-    addGroupMembersViewModel: AddGroupMembersViewModel) {
+    addGroupMembersViewModel: AddGroupMembersViewModel,
+    taskViewModel: TaskViewModel) {
 
     val navController = rememberNavController()
 
@@ -44,9 +45,11 @@ fun Navigation(
             CreateGroupScreen(createGroupViewModel = createGroupViewModel, navController = navController)
         }
 
-        composable(route = Screens.CreateTaskScreen.route)
+        composable(route = Screens.CreateTaskScreen.route + "/{groupId}",
+            arguments = listOf(navArgument("groupId"){ type = NavType.StringType}))
         {
-            CreateTaskScreen(groupViewModel = groupViewModel, navController = navController)
+            val groupId = it.arguments?.getString("groupId")
+            groupId?.let{ groupId -> CreateTaskScreen(groupViewModel = groupViewModel, navController = navController, groupId = groupId)}
         }
 
         composable(route = Screens.AddGroupMembersScreen.route + "/{groupId}",
@@ -63,7 +66,7 @@ fun Navigation(
             arguments = listOf(navArgument("id") { type = NavType.StringType })
         ) { backStackEntry ->
             val groupId = backStackEntry.arguments!!.getString("id")!!
-            GroupDetailScreen(groupId = groupId, groupDetailViewModel = groupDetailViewModel, navController = navController)
+            GroupDetailScreen(groupId = groupId, groupDetailViewModel = groupDetailViewModel, taskViewModel = taskViewModel, navController = navController)
         }
     }
 }

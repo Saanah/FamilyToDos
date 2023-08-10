@@ -20,6 +20,7 @@ class MainActivity : ComponentActivity() {
     private val createGroupViewModel by viewModels<CreateGroupViewModel>()
     private val searchBarViewModel by viewModels<SearchBarViewModel>()
     private val addGroupMembersViewModel by viewModels<AddGroupMembersViewModel>()
+    private val taskViewModel by viewModels<TaskViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -30,7 +31,11 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                        Navigation(authViewModel,groupViewModel,groupDetailViewModel, createGroupViewModel, searchBarViewModel, addGroupMembersViewModel) //Navigaatio komponentti
+                    //Navigaatio komponentti
+                    Navigation(
+                        authViewModel, groupViewModel, groupDetailViewModel, createGroupViewModel,
+                        searchBarViewModel, addGroupMembersViewModel, taskViewModel
+                    )
                 }
             }
         }

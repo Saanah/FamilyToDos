@@ -9,4 +9,6 @@
     <string name="join_or_create_group">Create or join in a group!</string>
     <string name="add_selected_users">Add the selected users</string>
     <string name="assign">Assign task</string>
+    <string name="your_tasks">Your tasks</string>
+    <string name="all_tasks">All tasks</string>
 </resources>

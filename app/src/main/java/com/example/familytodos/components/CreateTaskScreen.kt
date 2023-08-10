@@ -1,5 +1,6 @@
 package com.example.familytodos.components
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,7 +38,9 @@ import com.example.familytodos.data.model.User
 import com.example.familytodos.ui.theme.spacing
 
 @Composable
-fun CreateTaskScreen(navController: NavController, groupViewModel: GroupViewModel) {
+fun CreateTaskScreen(navController: NavController, groupViewModel: GroupViewModel, groupId : String) {
+
+    Log.d("KISSA", groupId)
 
     val tasks = arrayOf(
         "Vacuum", "Wash dishes", "Do laundry", "Mop the floors",
@@ -45,7 +48,7 @@ fun CreateTaskScreen(navController: NavController, groupViewModel: GroupViewMode
         "Cooking", "Feed the pets"
     )
 
-    groupViewModel.getGroupInfoById("Hfa4igeu9tBaLK841goV")
+    groupViewModel.getGroupInfoById(groupId)
     val groupInfo = groupViewModel.groupInfo.collectAsState()
     var selectedUser by remember { mutableStateOf<User?>(null) }
     var selectedTask by remember { mutableStateOf(tasks[0]) }
@@ -56,16 +59,16 @@ fun CreateTaskScreen(navController: NavController, groupViewModel: GroupViewMode
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TaskDropdownMenu(tasks, selectedTask) { task ->
+        TaskDropdownMenu(tasks, selectedTask) { task ->    //pass selectedTask to dropdown menu and return the value using lambda
             selectedTask = task
         }
-        SelectUserForTask(groupInfo.value, selectedUser) { user ->
+        SelectUserForTask(groupInfo.value, selectedUser) { user -> //pass selectedUser to user selection and return the value using lambda
             selectedUser = user
         }
         Button(onClick = {
             selectedUser?.let { selectedUser ->
                 groupViewModel.createTaskForGroup(
-                    "Hfa4igeu9tBaLK841goV",
+                    groupId,
                     selectedTask,
                     selectedUser
                 );

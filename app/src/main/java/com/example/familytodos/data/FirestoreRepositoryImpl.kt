@@ -4,6 +4,7 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.example.familytodos.data.model.Group
+import com.example.familytodos.data.model.Task
 import com.example.familytodos.data.model.User
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -12,6 +13,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.ktx.toObject
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -136,9 +138,8 @@ class FirestoreRepositoryImpl @Inject constructor(
 
             db.collection("Users").whereEqualTo("username", username).get().await().map {
 
-                val response = it.toObject(User::class.java)
+                val user = it.toObject(User::class.java)
 
-                user = response
                 userList.add(user)
 
             }
@@ -172,8 +173,8 @@ class FirestoreRepositoryImpl @Inject constructor(
             }
 
             // Update the group document with the selected users
-            val groupRef = db.collection("Group").document(groupId)
-            groupRef.update("members", FieldValue.arrayUnion(*users.toTypedArray()))
+            val groupDocumentRef = db.collection("Group").document(groupId)
+            groupDocumentRef.update("members", FieldValue.arrayUnion(*users.toTypedArray()))
 
             "Users successfully added to the group."
 
@@ -190,8 +191,8 @@ class FirestoreRepositoryImpl @Inject constructor(
         isCompleted: Boolean
     ): String = suspendCoroutine { continuation -> //wrap async operation inside coroutine
 
-        val documentRef = db.collection("Task").document() //Create task document
-        var documentId = documentRef.id
+        val taskDocumentRef = db.collection("Task").document() //Create task document
+        var documentId = taskDocumentRef.id
 
         val task = hashMapOf(
             "id" to documentId,
@@ -202,7 +203,7 @@ class FirestoreRepositoryImpl @Inject constructor(
             "isCompleted" to isCompleted
         )
 
-        documentRef.set(task)
+        taskDocumentRef.set(task)
             .addOnSuccessListener {
                 Log.d(TAG, "Task successfully created!")
                 continuation.resume("Task succesfully created!") //resume function and return message
@@ -211,5 +212,67 @@ class FirestoreRepositoryImpl @Inject constructor(
                 Log.d(TAG, "Error creating a task", e)
                 continuation.resume("Error creating a task: $e")
             }
+    }
+
+    override suspend fun getUserTasks(groupId: String): MutableList<Task> {
+
+        val userId = currentUser?.uid
+        var userTasks = mutableListOf<Task>()
+
+        try {
+
+            val querySnapshot = db.collection("Task")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("groupId", groupId).get().await()
+
+            for (documentSnapshot in querySnapshot.documents) {
+
+                val task = documentSnapshot.toObject(Task::class.java)
+
+                if (task != null) {
+                    val isCompleted = documentSnapshot.getBoolean("isCompleted") ?: false
+                    task.isCompleted = isCompleted
+
+                    userTasks.add(task)
+                }
+            }
+        }
+        catch (e: FirebaseFirestoreException) {
+            Log.d("error", "getTaskDataFromFireStore $e")
+        }
+
+        return userTasks
+    }
+
+    override suspend fun getAllTasksFromGroup(groupId: String): MutableList<Task> {
+
+        var userTasks = mutableListOf<Task>()
+
+        try {
+
+            db.collection("Task").whereEqualTo("groupId", groupId).get().await().map {
+
+                val task = it.toObject(Task::class.java)
+                userTasks.add(task)
+            }
+
+        }
+        catch (e: FirebaseFirestoreException) {
+            Log.d("error", "getTaskDataFromFireStore $e")
+        }
+
+        return userTasks
+    }
+
+    override suspend fun changeTaskStatus(taskId: String, isCompleted: Boolean) {
+
+       val taskDocumentRef =  db.collection("Task").document(taskId)
+        //Hashmap for the task, updates isCompleted status
+        val updateTaskStatus = hashMapOf<String, Any>(
+            "isCompleted" to isCompleted
+        )
+
+        //Update isCompleted field only
+        taskDocumentRef.update(updateTaskStatus).await()
     }
 }

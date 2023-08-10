@@ -1,6 +1,7 @@
 package com.example.familytodos.data
 
 import com.example.familytodos.data.model.Group
+import com.example.familytodos.data.model.Task
 import com.example.familytodos.data.model.User
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -16,6 +17,9 @@ interface FirestoreRepository {
     suspend fun findUser(name: String):  MutableList<User>
     suspend fun addSelectedUsersToGroup(groupId: String, selectedUsers: List<User>) : String
     suspend fun createTask(groupId: String, task: String, username: String, userId : String, isCompleted: Boolean): String
+    suspend fun getUserTasks(groupId: String): MutableList<Task>
+    suspend fun getAllTasksFromGroup(groupId: String): MutableList<Task>
+    suspend fun changeTaskStatus(taskId: String, isCompleted: Boolean)
     //suspend fun createComment(): Comment
 
 }
