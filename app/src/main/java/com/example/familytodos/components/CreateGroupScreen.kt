@@ -65,7 +65,7 @@ fun CreateGroupScreen(
     // Observe when the groupId is not empty and allow navigation
     LaunchedEffect(groupId) {
         if (groupId.isNotEmpty()) {
-            navController.navigate(Screens.AddGroupMembersScreen.route + "/$groupId")
+            navController.navigate("${Screens.AddGroupMembersScreen.route}/${groupId}")
             createGroupViewModel.clearGroupId()
         }
     }

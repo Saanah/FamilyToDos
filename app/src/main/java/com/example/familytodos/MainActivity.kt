@@ -14,7 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val authViewModel by viewModels<AuthViewModel>()
+    //This is not necessary with Hilt since hiltViewModel() gets the instances, but one way to share viewmodels is this:
     private val groupViewModel by viewModels<GroupViewModel>()
     private val groupDetailViewModel by viewModels<GroupDetailViewModel>()
     private val createGroupViewModel by viewModels<CreateGroupViewModel>()
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     //Navigaatio komponentti
                     Navigation(
-                        authViewModel, groupViewModel, groupDetailViewModel, createGroupViewModel,
+                        groupViewModel, groupDetailViewModel, createGroupViewModel,
                         searchBarViewModel, addGroupMembersViewModel, taskViewModel
                     )
                 }

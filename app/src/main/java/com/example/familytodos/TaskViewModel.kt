@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.familytodos.data.FirestoreRepository
 import com.example.familytodos.data.model.Task
+import com.example.familytodos.data.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,16 +15,16 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TaskViewModel @Inject constructor(
-    private val firestoreRepository : FirestoreRepository //Get Firestore repository
+    private val firestoreRepository: FirestoreRepository //Get Firestore repository
 ) : ViewModel() {
 
-    private var _task : MutableStateFlow<MutableList<Task>> = MutableStateFlow(mutableListOf())
-    val task : StateFlow<List<Task>> = _task
+    private var _task: MutableStateFlow<MutableList<Task>> = MutableStateFlow(mutableListOf())
+    val task: StateFlow<List<Task>> = _task
 
-    private var _allTasks : MutableStateFlow<MutableList<Task>> = MutableStateFlow(mutableListOf())
-    val allTasks : StateFlow<MutableList<Task>> = _allTasks
+    private var _allTasks: MutableStateFlow<MutableList<Task>> = MutableStateFlow(mutableListOf())
+    val allTasks: StateFlow<MutableList<Task>> = _allTasks
 
-    fun getUserTasks(groupId: String){
+    fun getUserTasks(groupId: String) {
 
         viewModelScope.launch(Dispatchers.IO) {
 
@@ -32,7 +33,7 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun getAllTasksFromGroup(groupId : String){
+    fun getAllTasksFromGroup(groupId: String) {
 
         viewModelScope.launch(Dispatchers.IO) {
 
@@ -41,11 +42,37 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun changeTaskStatus(isCompleted : Boolean, taskId : String, groupId: String){
+    fun changeTaskStatus(task: Task, groupId: String, isCompleted: Boolean, points: Int) {
+
+        val currentUser = firestoreRepository.currentUser
 
         viewModelScope.launch(Dispatchers.IO) {
-            firestoreRepository.changeTaskStatus(taskId, isCompleted)
-            getUserTasks(groupId)
+
+            //If task belongs to the current user, allow status change
+            if (currentUser?.uid == task.userId) {
+                firestoreRepository.changeTaskStatus(task.id, isCompleted)
+                getUserTasks(groupId)
+                getAllTasksFromGroup(groupId)
+                addTaskPoints(groupId, task.username, points)
+            }
         }
     }
+
+    fun deleteTask(taskId: String, groupId: String){
+
+        viewModelScope.launch {
+            firestoreRepository.deleteTask(taskId)
+            getUserTasks(groupId)
+            getAllTasksFromGroup(groupId)
+        }
+    }
+
+    private fun addTaskPoints(groupId: String, username : String, points : Int){
+
+        viewModelScope.launch {
+            firestoreRepository.addOrDeleteCompletedTaskPoints(groupId, username, points)
+        }
+
+    }
+
 }

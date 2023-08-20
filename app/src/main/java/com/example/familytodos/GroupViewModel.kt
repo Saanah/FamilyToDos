@@ -2,9 +2,11 @@ package com.example.familytodos
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.familytodos.data.FirestoreRepository
 import com.example.familytodos.data.model.Group
 import com.example.familytodos.data.model.User
+import com.google.firebase.Timestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,8 +17,6 @@ import javax.inject.Inject
 class GroupViewModel @Inject constructor(
     private val firestoreRepository: FirestoreRepository  //Get Firestore repository
 ) : ViewModel() {
-
-    //private val _group = MutableLiveData<Group>()
 
     private val _group : MutableStateFlow<MutableList<Group>> = MutableStateFlow(mutableListOf())
     val group: StateFlow<MutableList<Group>> = _group
@@ -42,13 +42,20 @@ class GroupViewModel @Inject constructor(
     }
 
     //Create task for the group
-    fun createTaskForGroup(groupId: String, task : String, user : User){
+    fun createTaskForGroup(groupId: String, task : String, user : User, timestamp: Timestamp){
 
         val username = user.username
         val userId = user.userId
 
         viewModelScope.launch {
-            firestoreRepository.createTask(groupId, task, username, userId, false)
+            firestoreRepository.createTask(groupId, task, username, userId, false, timestamp)
+        }
+    }
+    fun deleteMemberFromGroup(userId : String, groupId : String){
+
+        viewModelScope.launch {
+            firestoreRepository.deleteMemberFromGroup(userId, groupId)
+            getGroupInfoById(groupId)
         }
     }
 }

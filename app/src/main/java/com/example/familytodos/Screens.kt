@@ -9,4 +9,8 @@ sealed class Screens(val route: String) {
     object GroupDetailScreen : Screens("group_detail_screen")
     object AddGroupMembersScreen : Screens("add_group_members_screen")
     object CreateTaskScreen : Screens("create_task_screen")
+    object GroupInfoScreen : Screens("group_info_screen")
+    object HighscoreScreen : Screens("highscore_screen")
+    object UserPointsScreen : Screens("user_points_screen")
+    object AccountScreen : Screens("account_screen")
 }

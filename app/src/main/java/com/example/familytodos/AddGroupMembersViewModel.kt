@@ -16,7 +16,7 @@ class AddGroupMembersViewModel @Inject constructor(
     private val firestoreRepository: FirestoreRepository //Get Firestore repository
 ) : ViewModel() {
 
-    fun addSelectedUsersToGroup(groupId: String, selectedUsers: List<User>) {
+    fun addSelectedUsersToGroup(groupId: String, selectedUsers: MutableList<User>) {
 
 
         viewModelScope.launch {

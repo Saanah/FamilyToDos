@@ -50,7 +50,7 @@ fun AddGroupMembersScreen(searchBarViewModel: SearchBarViewModel, addGroupMember
                 val isSelected =
                     selectedUsers.contains(user) //If user is in the list and selected return true, otherwise false
 
-                UserCard(user, isSelected, onClick = {
+                UserCard(user = user, isSelected = isSelected, isImage = true, onClick = {
                     if (isSelected) selectedUsers.remove(user) //if user is already selected, delete the user from list
                     else selectedUsers.add(user)
                 })
@@ -58,9 +58,12 @@ fun AddGroupMembersScreen(searchBarViewModel: SearchBarViewModel, addGroupMember
         }
         
         Button(onClick = {
-
             addGroupMembersViewModel.addSelectedUsersToGroup(groupId, selectedUsers)
-            navController.navigate(Screens.MainScreen.route)
+            navController.navigate(route ="${Screens.GroupDetailScreen.route}/${groupId}"){
+                popUpTo(Screens.MainScreen.route) {
+                    inclusive = true // Include the destination CreateGroupScreen in the removal
+                }
+            }
             searchBarViewModel.clearFoundUsers()}
           ) {
             Text(text = stringResource(R.string.add_selected_users))

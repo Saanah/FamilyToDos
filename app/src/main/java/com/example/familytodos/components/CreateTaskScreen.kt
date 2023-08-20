@@ -1,17 +1,21 @@
 package com.example.familytodos.components
 
+import CalendarDatePicker
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -36,11 +40,16 @@ import com.example.familytodos.Screens
 import com.example.familytodos.data.model.Group
 import com.example.familytodos.data.model.User
 import com.example.familytodos.ui.theme.spacing
+import com.google.firebase.Timestamp
+import java.time.LocalDate
+import java.util.Calendar
 
 @Composable
-fun CreateTaskScreen(navController: NavController, groupViewModel: GroupViewModel, groupId : String) {
-
-    Log.d("KISSA", groupId)
+fun CreateTaskScreen(
+    navController: NavController,
+    groupViewModel: GroupViewModel,
+    groupId: String
+) {
 
     val tasks = arrayOf(
         "Vacuum", "Wash dishes", "Do laundry", "Mop the floors",
@@ -52,6 +61,7 @@ fun CreateTaskScreen(navController: NavController, groupViewModel: GroupViewMode
     val groupInfo = groupViewModel.groupInfo.collectAsState()
     var selectedUser by remember { mutableStateOf<User?>(null) }
     var selectedTask by remember { mutableStateOf(tasks[0]) }
+    var selectedTimestamp: Timestamp by remember { mutableStateOf(Timestamp.now()) }
 
     Column(
         modifier = Modifier
@@ -59,25 +69,52 @@ fun CreateTaskScreen(navController: NavController, groupViewModel: GroupViewMode
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TaskDropdownMenu(tasks, selectedTask) { task ->    //pass selectedTask to dropdown menu and return the value using lambda
+        TaskDropdownMenu(
+            tasks,
+            selectedTask
+        ) { task ->    //pass selectedTask to dropdown menu and return the value using lambda
             selectedTask = task
         }
-        SelectUserForTask(groupInfo.value, selectedUser) { user -> //pass selectedUser to user selection and return the value using lambda
+        SelectUserForTask(
+            groupInfo.value,
+            selectedUser
+        ) { user -> //pass selectedUser to user selection and return the value using lambda
             selectedUser = user
         }
-        Button(onClick = {
-            selectedUser?.let { selectedUser ->
-                groupViewModel.createTaskForGroup(
-                    groupId,
-                    selectedTask,
-                    selectedUser
-                );
-                navController.navigate(Screens.MainScreen.route) //Vaihda groupDetailScreen
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+        Divider()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(MaterialTheme.spacing.large),
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CalendarDatePicker { timestamp ->
+                selectedTimestamp = timestamp
             }
-        }) {
+            Button(
+                modifier = Modifier.padding(MaterialTheme.spacing.large),
+                onClick = {
+                    selectedUser?.let { selectedUser ->
+                        groupViewModel.createTaskForGroup(
+                            groupId,
+                            selectedTask,
+                            selectedUser,
+                            selectedTimestamp
+                        );
+                        navController.navigate("${Screens.GroupDetailScreen.route}/${groupId}") //Go back to GroupDetailView after task is created
+                        {
+                            popUpTo(Screens.MainScreen.route) {
+                                inclusive = true // Include the destination MainScreen in the removal
+                            }
+                        }
+                    }
+                }) {
 
-            Text(text = stringResource(id = R.string.assign))
+                Text(text = stringResource(id = R.string.assign))
 
+            }
         }
     }
 }
@@ -138,7 +175,7 @@ fun SelectUserForTask(groupInfo: Group, selectedUser: User?, onUserSelected: (Us
 
             val isSelected = selectedUser == user
 
-            UserCard(user = user, isSelected, onClick = {
+            UserCard(user = user, isSelected = isSelected, isImage = false, onClick = {
                 onUserSelected(if (isSelected) null else user) //lambda for createTaskScreen
             })
         }

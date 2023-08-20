@@ -7,6 +7,8 @@ import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Mail
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,22 +28,26 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.familytodos.AuthViewModel
 import com.example.familytodos.Screens
-
+import com.example.familytodos.data.model.MenuItemData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(navController: NavController, viewModel: AuthViewModel) {
-
-    val menuItems = getMenuItems()
+fun TopBar(
+    title: String,
+    navController: NavController,
+    menuItems: List<MenuItemData> = getMenuItems(),
+    authViewModel: AuthViewModel = hiltViewModel(),
+) {
     var isMenuOpen by remember {
         mutableStateOf(false)
     }
 
     TopAppBar(
-        title = { Text("Family ToDos") },
+        title = { Text(title) },
         colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = MaterialTheme.colorScheme.primary),
         actions = {
             IconButton(onClick = { isMenuOpen = true }) {
@@ -67,11 +73,17 @@ fun TopBar(navController: NavController, viewModel: AuthViewModel) {
                     DropdownMenuItem(text = { Text(itemText) },
                         onClick = {
                             if (menuItem.route == Screens.LoginScreen.route) {  //If log out is clicked
-                                viewModel.logout()
+                                authViewModel.logout()
                                 navController.navigate(menuItem.route) {
-                                    popUpTo(Screens.LoginScreen.route)      //Remove all screens up to Login screen
+                                    //popUpTo(Screens.LoginScreen.route)      //Remove all screens up to Login screen
                                 }
-                            } else {
+                            }
+                            //If groupId needs to be passed
+                            else if (menuItem.groupId != null){
+                                navController.navigate("${menuItem.route}/${menuItem.groupId}"){
+                                }
+                            }
+                            else {
                                 navController.navigate(menuItem.route)
                             }
                         },
@@ -95,16 +107,16 @@ fun getMenuItems(): ArrayList<MenuItemData> {
 
     listItems.add(
         MenuItemData(
-            text = "Notes",
-            icon = Icons.Outlined.Bookmarks,
-            route = Screens.CreateGroupScreen.route
+            text = "Account",
+            icon = Icons.Outlined.Person,
+            route = Screens.AccountScreen.route
         )
     )
     listItems.add(
         MenuItemData(
-            text = "Options",
-            icon = Icons.Outlined.Apps,
-            route = Screens.CreateGroupScreen.route
+            text = "Points",
+            icon = Icons.Outlined.Star,
+            route = Screens.UserPointsScreen.route
         )
     )
     listItems.add(
@@ -125,5 +137,3 @@ fun getMenuItems(): ArrayList<MenuItemData> {
     return listItems
 }
 
-//Data class for menu items
-data class MenuItemData(val text: String, val icon: ImageVector, val route: String)
