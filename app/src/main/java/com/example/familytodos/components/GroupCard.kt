@@ -5,9 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -17,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -30,13 +33,13 @@ fun GroupCard(group: Group, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(MaterialTheme.spacing.medium)
+            .padding(MaterialTheme.spacing.small)
             .clickable (onClick = onClick),
         shape = RoundedCornerShape(MaterialTheme.spacing.medium),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = MaterialTheme.spacing.small),
+        elevation = CardDefaults.cardElevation(defaultElevation = MaterialTheme.spacing.extraSmall),
 
         content = {
 
@@ -53,7 +56,6 @@ fun GroupCard(group: Group, onClick: () -> Unit) {
                     modifier = Modifier.fillMaxWidth( 0.8f)
 
                 )
-
                 {
                     Text(
                         group.name,
@@ -76,9 +78,9 @@ fun GroupCard(group: Group, onClick: () -> Unit) {
                 group.img?.let { url ->
                     Image(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(shape = RoundedCornerShape(MaterialTheme.spacing.medium))
-                            .size(size = 66.dp),
+                            .size(64.dp)
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(MaterialTheme.spacing.medium)),
                         painter = rememberAsyncImagePainter(url),
                         contentDescription = group.img_description,
                         contentScale = ContentScale.Crop

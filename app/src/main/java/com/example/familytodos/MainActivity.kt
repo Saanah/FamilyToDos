@@ -14,12 +14,13 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val authViewModel by viewModels<AuthViewModel>()
+    //This is not necessary with Hilt since hiltViewModel() gets the instances, but one way to share viewmodels is this:
     private val groupViewModel by viewModels<GroupViewModel>()
     private val groupDetailViewModel by viewModels<GroupDetailViewModel>()
     private val createGroupViewModel by viewModels<CreateGroupViewModel>()
     private val searchBarViewModel by viewModels<SearchBarViewModel>()
     private val addGroupMembersViewModel by viewModels<AddGroupMembersViewModel>()
+    private val taskViewModel by viewModels<TaskViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -30,7 +31,11 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                        Navigation(authViewModel,groupViewModel,groupDetailViewModel, createGroupViewModel, searchBarViewModel, addGroupMembersViewModel) //Navigaatio komponentti
+                    //Navigaatio komponentti
+                    Navigation(
+                        groupViewModel, groupDetailViewModel, createGroupViewModel,
+                        searchBarViewModel, addGroupMembersViewModel, taskViewModel
+                    )
                 }
             }
         }

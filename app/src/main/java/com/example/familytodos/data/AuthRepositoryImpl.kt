@@ -55,6 +55,17 @@ class AuthRepositoryImpl @Inject constructor(
             Resource.Failure(e)
         }
     }
+    override suspend fun deleteUser() : Resource<Any> {
+
+        return try{
+          currentUser?.delete()?.await()
+            Resource.Success(Unit)
+        }
+        catch(e: Exception){
+            e.printStackTrace()
+            Resource.Failure(e)
+        }
+    }
 
     override fun logout() {
         firebaseAuth.signOut()

@@ -1,4 +1,5 @@
 package com.example.familytodos
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.familytodos.data.AuthRepository
@@ -21,6 +22,9 @@ class AuthViewModel @Inject constructor(
 
     private val _registerFlow = MutableStateFlow<Resource<FirebaseUser>?>(null)
     val registerFlow: StateFlow<Resource<FirebaseUser>?> = _registerFlow
+
+    private val _deleteFlow = MutableStateFlow<Resource<Any>?>(null)
+    val deleteFlow: StateFlow<Resource<Any>?> = _deleteFlow
 
     val currentUser: FirebaseUser? get() = repository.currentUser
 
@@ -47,5 +51,18 @@ class AuthViewModel @Inject constructor(
         repository.logout()
         _loginFlow.value = null
         _registerFlow.value = null
+    }
+
+    fun deleteUser(){
+        viewModelScope.launch {
+            val result = repository.deleteUser()
+            if (result is Resource.Success) {
+                _loginFlow.value = null
+                _registerFlow.value = null
+                _deleteFlow.value = result
+            } else if (result is Resource.Failure) {
+                _deleteFlow.value = result
+            }
+        }
     }
 }

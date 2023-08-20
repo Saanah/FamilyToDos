@@ -26,6 +26,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.familytodos.AuthViewModel
 import com.example.familytodos.R
@@ -35,7 +36,7 @@ import com.example.familytodos.ui.theme.spacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(viewModel: AuthViewModel?, navController: NavController) {
+fun LoginScreen(viewModel: AuthViewModel = hiltViewModel(), navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(value = false) }
@@ -47,7 +48,11 @@ fun LoginScreen(viewModel: AuthViewModel?, navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Text(text = "FamilyDos!")
+        Text(
+            text = stringResource(id = R.string.app_name),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = MaterialTheme.spacing.medium)
+        )
 
         TextField(
             value = email,
@@ -89,22 +94,34 @@ fun LoginScreen(viewModel: AuthViewModel?, navController: NavController) {
         )
 
         Button(
-            modifier = Modifier.padding(MaterialTheme.spacing.large),
+            modifier = Modifier.padding(top = MaterialTheme.spacing.large),
             onClick = {
                 viewModel?.login(email, password)
             }) {
 
-            Text(text = stringResource(R.string.sign_in), fontSize = 20.sp)
+            Text(text = stringResource(R.string.log_in), fontSize = 18.sp)
         }
 
         ClickableText(text = AnnotatedString(stringResource(R.string.register_now)),
-            style = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(top = MaterialTheme.spacing.large),
             onClick = {
 
                 navController.navigate(Screens.RegisterScreen.route)
 
             })
 
+        Button(
+            modifier = Modifier.padding(
+                bottom = MaterialTheme.spacing.large,
+                top = MaterialTheme.spacing.small
+            ),
+            onClick = {
+                navController.navigate(Screens.RegisterScreen.route)
+            }) {
+
+            Text(text = stringResource(R.string.sign_in), fontSize = 18.sp)
+        }
 
         loginFlow?.value?.let {
             when (it) {

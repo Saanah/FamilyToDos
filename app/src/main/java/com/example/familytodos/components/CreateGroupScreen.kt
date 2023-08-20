@@ -26,7 +26,6 @@ import com.example.familytodos.Screens
 import com.example.familytodos.data.model.User
 import com.example.familytodos.ui.theme.spacing
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateGroupScreen(
@@ -36,15 +35,7 @@ fun CreateGroupScreen(
 
     var groupName by remember { mutableStateOf("") }
     var groupDescription by remember { mutableStateOf("") }
-    var createGroupResult = createGroupViewModel.message.collectAsState()
-    var isNavigationAllowed by remember { mutableStateOf(false) }
     val groupId by createGroupViewModel.groupId.collectAsState()
-
-    LaunchedEffect(groupId) {
-        if (groupId.isNotEmpty()) {
-            isNavigationAllowed = true
-        }
-    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -66,14 +57,16 @@ fun CreateGroupScreen(
         )
 
         Button(onClick = {
-            createGroupViewModel.createGroup(
-                groupName,
-                groupDescription
-            );
-            if(isNavigationAllowed) navController.navigate(Screens.AddGroupMembersScreen.route + "/$groupId") //navArguments for groupId
+            createGroupViewModel.createGroup(groupName, groupDescription)
         }) {
             Text("Create")
         }
     }
-
+    // Observe when the groupId is not empty and allow navigation
+    LaunchedEffect(groupId) {
+        if (groupId.isNotEmpty()) {
+            navController.navigate("${Screens.AddGroupMembersScreen.route}/${groupId}")
+            createGroupViewModel.clearGroupId()
+        }
+    }
 }

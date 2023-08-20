@@ -1,5 +1,6 @@
 package com.example.familytodos.di
 
+import com.example.familytodos.AuthViewModel
 import com.example.familytodos.GroupViewModel
 import com.example.familytodos.data.AuthRepository
 import com.example.familytodos.data.AuthRepositoryImpl
@@ -25,9 +26,11 @@ class AppModule {
     @Provides
     fun provideFirestoreRepository(impl: FirestoreRepositoryImpl) : FirestoreRepository = impl
 
+    //ViewModels could also be passed by hiltViewModel() in a composable
     @Provides
     fun provideGroupViewModel(firestoreRepository: FirestoreRepository) : GroupViewModel {
 
         return GroupViewModel(firestoreRepository)
     }
+
 }
